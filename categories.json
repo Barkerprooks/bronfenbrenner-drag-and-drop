@@ -1,0 +1,29 @@
+{
+    "Microsystem": [
+        "Parents",
+        "Close Friends",
+        "Professors",
+        "Classmates",
+        "Workspace supervisor"
+    ],
+    "Mesosystem": [
+        "Parent communicating with a professor",
+        "Work schedule conflicting with classes"
+    ],
+    "Exosystem": [
+        "Parent workplace stress",
+        "College financial aid policies",
+        "University housing policies",
+        "Local healthcare access"
+    ],
+    "Macrosystem": [
+        "Cultural beliefs about education",
+        "Social attitudes toward mental health",
+        "National education policies"
+    ],
+    "Chronosystem": [
+        "COVID-19 pandemic",
+        "Economic recession",
+        "Transition from high school to college"
+    ]
+}
