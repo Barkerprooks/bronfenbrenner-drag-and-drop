@@ -5,7 +5,7 @@
 }
 
 body {
-    background-color: slategray;
+    background-color: antiquewhite;
 }
 
 #container {
@@ -29,6 +29,7 @@ answer-box {
     padding: 1rem;
     margin: 0.5rem 0;
     cursor: pointer;
+    border-radius: 4px;
     /* position: relative;
     font-family: Arial, Helvetica, sans-serif;
     border: 1px dotted grey;
@@ -49,6 +50,7 @@ answer-box {
     pointer-events: none;
     top: 0;
     left: 0;
+    z-index: 1;
 }
 
 #container #left .answer .dragfrom {
@@ -62,6 +64,7 @@ answer-box {
 }
 
 #circles {
+    margin-top: 2rem;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 11pt;
     display: block;
@@ -70,10 +73,11 @@ answer-box {
 }
 
 #circles .circle {
+    position: relative;
     border-radius: 50%;
     text-align: center;
     border: 1px solid transparent;
-    box-shadow: 0px 0px 4px grey;
+    /* box-shadow: 0px 0px 4px grey; */
     margin: 0 auto;
     cursor: pointer;
     transition: 0.2s;
@@ -84,8 +88,10 @@ answer-box {
 }
 
 #circles .label {
-    padding-top: 25px;
+    margin: 0 auto;
+    padding-top: 20px;
     height: 50px;
+    width: fit-content;
 }
 
 #circles #chrono {
@@ -119,7 +125,7 @@ answer-box {
 }
 
 #circles #child {
-    background-color: white;
+    background-color: beige;
     padding-top: 10px;
     height: 100px;
     width: 100px;

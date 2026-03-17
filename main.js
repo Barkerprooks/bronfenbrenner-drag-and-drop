@@ -58,6 +58,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const answers = document.querySelectorAll(".answer");
     const svg = container.querySelector("svg");
     const line = svg.querySelector("line");
+    const centerCircle = document.querySelector("#child");
+    const centerBounds = centerCircle.getBoundingClientRect();
 
     const dragging = {
         active: false,
@@ -67,23 +69,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const resetAllCircles = () => circles.forEach(circle => circle.classList.remove("circle-outline"));
 
-    const withinCircle = (rect) => {
-        const dx = rect;
-    };
-
-    circles.forEach(circle => {
-        const shape = circle.getBoundingClientRect();
-        console.log(shape);
-
+    circles.forEach((circle, index) => {
         circle.addEventListener("mouseover", event => {
             resetAllCircles();
 
             circle.classList.add("circle-outline");
             event.stopPropagation();
-        });
-
-        circle.addEventListener("mousemove", event => {
-            console.log(event);
         });
 
         circle.addEventListener("mouseleave", event => {
@@ -93,19 +84,40 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         circle.addEventListener("mouseup", event => {
             dragging.active = false;
+
+            console.log(event);
+
+            const x1 = parseFloat(line.getAttribute("x1"));
+            const y1 = parseFloat(line.getAttribute("y1"));
+
+            const x2 = centerBounds.left + centerBounds.width / 2;
+            const y2 = centerBounds.top + centerBounds.height / 2;
+
+            const [dx, dy] = [x2 - x1, y2 - y1];
+            const d = Math.sqrt(dx + dy);
+            const [ux, uy] = [dx / d, dy / d];
+            const [nx, ny] = [x1 + ux * (d - 5), y1 + uy * (d - 5)];
+
+            console.log(x1, x2, y1, y2);
+            console.log(ux, uy);
+            console.log('distance', d);
+
+            line.setAttribute("x2", nx);
+            line.setAttribute("y2", ny);
+
             event.stopPropagation();
         });
     });
 
-    container.addEventListener("mouseup", () => {
-        dragging.active = false
-        line.setAttribute("stroke", "transparent");
-        line.setAttribute("x2", dragging.origin.x);
-        line.setAttribute("y2", dragging.origin.y);
-        container.querySelectorAll(".dragfrom").forEach(dot => {
-            dot.innerHTML = "&#x25cb;";
-        });
-    });
+    // container.addEventListener("mouseup", () => {
+    //     dragging.active = false
+    //     line.setAttribute("stroke", "transparent");
+    //     line.setAttribute("x2", dragging.origin.x);
+    //     line.setAttribute("y2", dragging.origin.y);
+    //     container.querySelectorAll(".dragfrom").forEach(dot => {
+    //         dot.innerHTML = "&#x25cb;";
+    //     });
+    // });
 
     answers.forEach(answer => {
         answer.addEventListener("mousedown", event => {
