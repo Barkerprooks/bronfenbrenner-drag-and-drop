@@ -4,6 +4,10 @@
     margin: 0;
 }
 
+body {
+    background-color: slategray;
+}
+
 #container {
     display: flex;
     justify-content: center;
@@ -12,22 +16,30 @@
 }
 
 #container .side {
+    margin: 0 2rem;
     padding: 1rem;
     width: 250px;
-    margin: 0 2rem;
 }
 
-#container .side .answer {
+answer-box {
     position: relative;
-    font-size: 10pt;
-    border: 1px solid grey;
+    border: 1px solid black;
+    display: block;
+    text-align: center;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    cursor: pointer;
+    /* position: relative;
+    font-family: Arial, Helvetica, sans-serif;
+    border: 1px dotted grey;
     border-radius: 4px;
     margin: 0.5rem 0;
     padding: 0.5rem;
     cursor: pointer;
     transition: 0.2s;
-    background-color: aliceblue;
-    z-index: 1;
+    background-color: transparent;
+    display: block;
+    box-shadow: 0 0 8px lightgrey; */
 }
 
 #container svg {
@@ -49,10 +61,6 @@
     left: -20px;
 }
 
-#container .side .answer:hover {
-    box-shadow: 0 0 8px lightgrey;
-}
-
 #circles {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 11pt;
@@ -69,15 +77,14 @@
     margin: 0 auto;
     cursor: pointer;
     transition: 0.2s;
-    z-index: 5;
 }
 
 #circles .circle-outline {
-    box-shadow: 0px 0px 8px dimgrey;
+    box-shadow: 0px 0px 8px blue;
 }
 
 #circles .label {
-    padding-top: 18px;
+    padding-top: 25px;
     height: 50px;
 }
 
