@@ -14,9 +14,12 @@ class AnswerBox extends HTMLElement {
         this.appendChild(this.textElement);
         this.appendChild(this.dragElement);
     }
+
+    getText() {
+        return this.textElement.innerText;
+    }
 }
 
-customElements.define("answer-box", AnswerBox);
 
 const shuffle = (xs) => {
     for (let i = xs.length - 1; i > 0; i--) {
@@ -27,15 +30,40 @@ const shuffle = (xs) => {
     }
 }
 
+const findClosestPointOnCircle = (vA, vB, r) => {
+    vC = {
+        x: vB.x - vA.x,
+        y: vB.y - vA.y
+    }
+
+    v2 = {
+        x: Math.pow(vC.x, 2),
+        y: Math.pow(vC.y, 2)
+    };
+
+    d = Math.sqrt(v2.x + v2.y);
+
+    return {
+        x: vA.x + r * (vC.x / d),
+        y: vA.y + r * (vC.y / d)
+    };
+};
+
+customElements.define("answer-box", AnswerBox);
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     const left = document.querySelector("#left");
     const right = document.querySelector("#right");
+
     let [leftList, rightList] = [[], []];
 
-    const categories = await fetch("/answers.json");
+    const response = await fetch("/answers.json");
+    const categories = await response.json();
 
-    Object.entries(await categories.json()).forEach(([_, answerList]) => {
+    const answerMap = {};
+
+    Object.entries(categories).forEach(([_, answerList]) => {
         shuffle(answerList);
 
         answerList.forEach(answer => {
@@ -47,6 +75,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             } else {
                 Math.random() > 0.5 ? leftList.push(answerBox) : rightList.push(answerBox);
             }
+            answerMap[answer] = {
+                element: answerBox,
+                mapping: undefined
+            };
         });
 
         leftList.forEach(answer => left.appendChild(answer));
@@ -56,72 +88,88 @@ document.addEventListener("DOMContentLoaded", async () => {
     const container = document.querySelector("#container");
     const circles = document.querySelectorAll(".circle");
     const answers = document.querySelectorAll(".answer");
+    const button = document.querySelector("button");
     const svg = container.querySelector("svg");
     const line = svg.querySelector("line");
-    const centerCircle = document.querySelector("#child");
-    const centerBounds = centerCircle.getBoundingClientRect();
 
     const dragging = {
         active: false,
         origin: undefined,
         target: undefined,
+        answer: undefined,
     };
 
     const resetAllCircles = () => circles.forEach(circle => circle.classList.remove("circle-outline"));
 
-    circles.forEach((circle, index) => {
+    circles.forEach(circle => {
         circle.addEventListener("mouseover", event => {
-            resetAllCircles();
-
-            circle.classList.add("circle-outline");
+            if (dragging.active) {
+                resetAllCircles();
+                circle.classList.add("circle-outline");
+            }
             event.stopPropagation();
         });
 
         circle.addEventListener("mouseleave", event => {
-            resetAllCircles();
+            if (dragging.active) {
+                resetAllCircles();
+            }
             event.stopPropagation();
         });
 
         circle.addEventListener("mouseup", event => {
+            if (!dragging.active) {
+                return;
+            }
+
+            resetAllCircles();
+
             dragging.active = false;
+            line.setAttribute("stroke", "transparent");
 
-            console.log(event);
+            const bounds = circle.getBoundingClientRect();
 
-            const x1 = parseFloat(line.getAttribute("x1"));
-            const y1 = parseFloat(line.getAttribute("y1"));
+            vA = {
+                x: parseFloat(line.getAttribute("x1")),
+                y: parseFloat(line.getAttribute("y1"))
+            }
 
-            const x2 = centerBounds.left + centerBounds.width / 2;
-            const y2 = centerBounds.top + centerBounds.height / 2;
+            vB = {
+                x: bounds.left + bounds.width / 2,
+                y: bounds.top + bounds.height / 2
+            }
 
-            const [dx, dy] = [x2 - x1, y2 - y1];
-            const d = Math.sqrt(dx + dy);
-            const [ux, uy] = [dx / d, dy / d];
-            const [nx, ny] = [x1 + ux * (d - 5), y1 + uy * (d - 5)];
+            const vC = findClosestPointOnCircle(vB, vA, bounds.width / 2);
 
-            console.log(x1, x2, y1, y2);
-            console.log(ux, uy);
-            console.log('distance', d);
+            const newLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            newLine.setAttribute("x1", vA.x);
+            newLine.setAttribute("y1", vA.y);
+            newLine.setAttribute("x2", vC.x);
+            newLine.setAttribute("y2", vC.y);
+            newLine.setAttribute("stroke", "black");
+            newLine.setAttribute("stroke-width", 2);
+            svg.appendChild(newLine);
 
-            line.setAttribute("x2", nx);
-            line.setAttribute("y2", ny);
+            const newCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            newCircle.setAttribute("r", 2);
+            newCircle.setAttribute("cx", vC.x);
+            newCircle.setAttribute("cy", vC.y);
+            newCircle.setAttribute("stroke", "black");
+            svg.appendChild(newCircle);
+
+            const divElement = circle.querySelector("div");
+            answerMap[dragging.answer].mapping = divElement.innerText;
 
             event.stopPropagation();
         });
     });
 
-    // container.addEventListener("mouseup", () => {
-    //     dragging.active = false
-    //     line.setAttribute("stroke", "transparent");
-    //     line.setAttribute("x2", dragging.origin.x);
-    //     line.setAttribute("y2", dragging.origin.y);
-    //     container.querySelectorAll(".dragfrom").forEach(dot => {
-    //         dot.innerHTML = "&#x25cb;";
-    //     });
-    // });
-
     answers.forEach(answer => {
-        answer.addEventListener("mousedown", event => {
+        answer.addEventListener("mousedown", () => {
+            const spanElement = answer.querySelector("span");
+
             dragging.active = true;
+            dragging.answer = spanElement.innerText;
 
             const dot = answer.querySelector(".dragfrom");
             const dotBounds = dot.getBoundingClientRect();
@@ -135,9 +183,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             line.setAttribute("stroke", "transparent");
             line.setAttribute("x1", dragging.origin.x);
-            line.setAttribute("y1", dragging.origin.y);
+            line.setAttribute("y1", dragging.origin.y - 1);
             line.setAttribute("y2", dragging.origin.x);
-            line.setAttribute("y2", dragging.origin.y);
+            line.setAttribute("y2", dragging.origin.y - 1);
         });
     });
 
@@ -148,4 +196,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             line.setAttribute("y2", event.clientY);
         }
     });
+
+    button.addEventListener("click", () => {
+        Object.entries(answerMap).forEach(([answer, category]) => {
+            const mapping = categories[category.mapping] || [];
+            if (mapping.includes(answer)) {
+                category.element.classList.add("right");
+                console.log("correct!", answer);
+            } else {
+                category.element.classList.add("wrong");
+                console.log("wrong!", answer);
+            }
+        });
+    });
 });
+
