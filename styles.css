@@ -56,6 +56,10 @@ answer-box:hover {
     box-shadow: 0 0 4px grey;
 }
 
+answer-box:active {
+    box-shadow: 0 0 8px black;
+}
+
 .right {
     border: 2px solid green !important;
 }

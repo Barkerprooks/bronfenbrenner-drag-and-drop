@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         answerList.forEach(answer => {
             const answerBox = new AnswerBox(answer);
+
             if (rightList.length >= 0 && rightList.length < 8) {
                 rightList.push(answerBox);
             } else if (leftList.length >= 0 && leftList.length < 8) {
@@ -75,11 +76,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             } else {
                 Math.random() > 0.5 ? leftList.push(answerBox) : rightList.push(answerBox);
             }
+
             answerMap[answer] = {
-                element: answerBox,
+                elements: {
+                    answerBox,
+                    line: undefined,
+                    dot: undefined
+                },
                 mapping: undefined
             };
         });
+
+        shuffle(leftList);
+        shuffle(rightList);
 
         leftList.forEach(answer => left.appendChild(answer));
         rightList.forEach(answer => right.appendChild(answer));
@@ -149,6 +158,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             newLine.setAttribute("stroke", "black");
             newLine.setAttribute("stroke-width", 2);
             svg.appendChild(newLine);
+            answerMap[dragging.answer].elements.line = newLine;
 
             const newCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             newCircle.setAttribute("r", 2);
@@ -156,9 +166,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             newCircle.setAttribute("cy", vC.y);
             newCircle.setAttribute("stroke", "black");
             svg.appendChild(newCircle);
+            answerMap[dragging.answer].elements.dot = newCircle;
 
-            const divElement = circle.querySelector("div");
-            answerMap[dragging.answer].mapping = divElement.innerText;
+            const mapping = circle.querySelector("div").innerText;
+            answerMap[dragging.answer].mapping = mapping;
 
             event.stopPropagation();
         });
@@ -166,10 +177,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     answers.forEach(answer => {
         answer.addEventListener("mousedown", () => {
-            const spanElement = answer.querySelector("span");
+            const answerText = answer.querySelector("span").innerText;
+
+            if (answerMap[answerText]) {
+                answerMap[answerText].elements.line?.remove();
+                answerMap[answerText].elements.line = undefined;
+                answerMap[answerText].elements.dot?.remove();
+                answerMap[answerText].elements.dot = undefined;
+            }
 
             dragging.active = true;
-            dragging.answer = spanElement.innerText;
+            dragging.answer = answerText;
 
             const dot = answer.querySelector(".dragfrom");
             const dotBounds = dot.getBoundingClientRect();
@@ -201,10 +219,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         Object.entries(answerMap).forEach(([answer, category]) => {
             const mapping = categories[category.mapping] || [];
             if (mapping.includes(answer)) {
-                category.element.classList.add("right");
+                category.elements.answerBox.classList.add("right");
+                category.elements.answerBox.classList.remove("wrong");
                 console.log("correct!", answer);
             } else {
-                category.element.classList.add("wrong");
+                category.elements.answerBox.classList.add("wrong");
+                category.elements.answerBox.classList.remove("right");
                 console.log("wrong!", answer);
             }
         });
